@@ -4,6 +4,16 @@
 # Federal University of Rio de Janeiro ###############################################################################
 ######################################################################################################################
 
+import random
+def generate_key(n_bits):
+    """This function return a key of n_bits bit"""
+    number = ''  # aux vector to save all bits
+
+    # Generates all key's bits
+    for i in range(0, n_bits):
+        number = number + str(random.randrange(0, 2))
+    return '0b' + number
+
 def shift_left(number, shift):
     """The function receive a binary number such as a=bin(12) and compute a left shift in this number by the value
     of a shift parameter.
@@ -82,3 +92,36 @@ def xor(n1, n2):
     else:
         diff = abs(len(number) - 34)
         return '0b' + '0' * diff + number[2:]
+
+
+def bit_sum(n1, n2):
+    # verifiying if is a bit class
+    if type(n1) is str:
+        n1 = n1
+    else:
+        n1 = bin(n1)
+    if type(n2) is str:
+        n2 = n2
+    else:
+        n2 = bin(n2)
+
+    number = ''  # create a list to add the binary number
+    carry = 0  # carry to use in the bit addition
+
+    for i, j in zip(n1[2:][::-1], n2[2:][::-1]):
+        soma = int(i) + int(j) + carry
+        if soma % 2 == 0:
+            carry = 1
+            number = number + str(0)
+        elif soma % 3 == 0:
+            carry = 1
+            number = number + str(1)
+        else:
+            carry = 0
+            number = number + str(1)
+    if len(number) == len(n1[2:]):
+        pass
+    else:
+        number = number[:-2]
+
+    return '0b' + number[::-1]
