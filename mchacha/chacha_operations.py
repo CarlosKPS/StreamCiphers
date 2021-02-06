@@ -1,4 +1,5 @@
 # criar a matrix do chacha
+from binaryfunctions.binoperations import *
 def generate_chacha_matrix(key, counter, n0, n1, n2, c0, c1, c2, c3, elements=0):
     try:
         x0 = c0
