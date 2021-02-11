@@ -47,14 +47,14 @@ def quarter_round(a, b, c, d):
 def chacha_round(matrix):
     M = matrix
     # Column Round
-    M[0][0], M[1][0], M[2][0], M[3][0] = quarter_round(matrix[0][0], matrix[1][0], matrix[2][0], matrix[3][0])
-    M[0][1], M[1][1], M[2][1], M[3][1] = quarter_round(matrix[0][1], matrix[1][1], matrix[2][1], matrix[3][1])
-    M[0][2], M[1][2], M[2][2], M[3][2] = quarter_round(matrix[0][2], matrix[1][2], matrix[2][2], matrix[3][2])
-    M[0][3], M[1][3], M[2][3], M[3][3] = quarter_round(matrix[0][3], matrix[1][3], matrix[2][3], matrix[3][3])
+    M[0][0], M[1][0], M[2][0], M[3][0] = quarter_round(M[0][0], M[1][0], M[2][0], M[3][0])
+    M[0][1], M[1][1], M[2][1], M[3][1] = quarter_round(M[0][1], M[1][1], M[2][1], M[3][1])
+    M[0][2], M[1][2], M[2][2], M[3][2] = quarter_round(M[0][2], M[1][2], M[2][2], M[3][2])
+    M[0][3], M[1][3], M[2][3], M[3][3] = quarter_round(M[0][3], M[1][3], M[2][3], M[3][3])
     # Diagonal Round
-    M[0][0], M[1][1], M[2][2], M[3][3] = quarter_round(matrix[0][0], matrix[1][1], matrix[2][2], matrix[3][3])
-    M[0][1], M[1][2], M[2][3], M[3][0] = quarter_round(matrix[0][1], matrix[1][2], matrix[2][3], matrix[3][0])
-    M[0][2], M[1][3], M[2][0], M[3][1] = quarter_round(matrix[0][2], matrix[1][3], matrix[2][0], matrix[3][1])
-    M[0][3], M[1][0], M[2][1], M[3][2] = quarter_round(matrix[0][3], matrix[1][0], matrix[2][1], matrix[3][2])
+    M[0][0], M[1][1], M[2][2], M[3][3] = quarter_round(M[0][0], M[1][1], M[2][2], M[3][3])
+    M[0][1], M[1][2], M[2][3], M[3][0] = quarter_round(M[0][1], M[1][2], M[2][3], M[3][0])
+    M[0][2], M[1][3], M[2][0], M[3][1] = quarter_round(M[0][2], M[1][3], M[2][0], M[3][1])
+    M[0][3], M[1][0], M[2][1], M[3][2] = quarter_round(M[0][3], M[1][0], M[2][1], M[3][2])
 
     return M

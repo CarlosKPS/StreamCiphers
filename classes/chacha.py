@@ -1,18 +1,27 @@
-from binaryfunctions.binoperations import *
 from mchacha.chacha_operations import *
+from mchacha.constants import *
 
 
 class ChachaEncrypt:
-    def __init__(self, key, nonce=None):
+    def __init__(self, key=None, nonce=None, const=None):
 
         # constants and relevant things for matrix formation
         if nonce is None:
-            nonce = [generate_key(32 + i - i) for i in range(0, 3)]
-        self.m_constant = [generate_key(32 + n - n) for n in range(0, 4)]  # Top matrix constants (magic numbers)
+            nonce = [NONCE0, NONCE1, NONCE2]
+        if const is None:
+            const = [C0, C1, C2, C3]  # Top matrix constants (magic numbers)
+        # values from constructor
+        if key is None:
+            key = KEY
+
+        self.m_constant = const
         self.key = key  # The algorithm key
         self.nonce = nonce  # o nonce
+
+        # create a counter and a key order
         self.counter = '0b' + '0' * 32  # the counter
         self.key_order = [0, 0]  # the ith,jth element of encrypted matrix
+        self.current_key = ''  # return the present key in each encrypt
 
         # The pre round matrix
         self.chacha_M = generate_chacha_matrix(self.key, self.counter, self.nonce[0],
@@ -25,9 +34,6 @@ class ChachaEncrypt:
         self.historical_cipher = []
 
         self.n_matrix = 0
-
-    def __str__(self):
-        return str(self.chacha_M)
 
     def encrypt(self, plain_text):
         """
@@ -44,21 +50,54 @@ class ChachaEncrypt:
             diff = abs(32 - len(str(plain_text)))  # the difference between the input and 32 bits
             p_text = '0b' + '0' * diff + str(plain_text)  # mount a plaintext in binary
 
+        # In this line the encryption occurs.
+        # Do a xor operation between plaintext and a ginven key inside the encrypted chacha matrix
         self.present_cipher = xor(p_text, self.encrypted_chacha_M[self.key_order[0]][self.key_order[1]])
         self.historical_cipher.append(self.present_cipher)
+
+        # Update next key_order
+        self.update_key()
 
         return self.present_cipher
 
     def generate_encrypted_matrix(self):
+        """
+        This functions also update the counter
+        :return: Current encrypted matrix
+        """
         # first chacha round
+        # create a new basis chacha matrix
         self.encrypted_chacha_M = chacha_round(self.get_chacha_matrix())
-        # range for remainig rounds
-        for i in range(0, 10):
+
+        # range for remaining rounds
+        for i in range(0, 9):
             self.encrypted_chacha_M = chacha_round(self.encrypted_chacha_M)
+
         # update the counter
         self.counter_update()
+
         # return encrypted matrix
         return self.encrypted_chacha_M
+
+    def update_key(self):
+        """
+        This function update the key will be utilized in each encryption.
+        :return: The indices of next number that will 'xorized' with the plaintext
+        """
+        # take the next element of the line
+        self.key_order[1] += 1
+
+        # If the jth term is more than 3 its mean that all elements of a row was totally traveled
+        if self.key_order[1] > 3:
+            self.key_order[0] += 1  # this mean next line
+            self.key_order[1] = 0  # first column
+            # If the the all lines
+            if self.key_order[1] > 3:
+                self.key_order = [0, 0]
+        # update the current key
+        self.current_key = self.encrypted_chacha_M[self.key_order[0]][self.key_order[1]]
+
+        return self.key_order
 
     def counter_update(self):
         add = bin(int(self.counter, 2) + 1)
@@ -81,5 +120,5 @@ class ChachaEncrypt:
 
     def get_status(self):
         print("Número da matrix encriptada gerada: ", self.n_matrix)
-        print("Número de chaves que foram usadas da matrix atual")
+        print("Current key: ", self.encrypted_chacha_M[self.key_order[0]][self.key_order[1]])
         print("Encriptações feitas: ")
