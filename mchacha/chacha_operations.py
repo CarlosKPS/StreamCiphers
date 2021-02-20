@@ -60,21 +60,39 @@ def chacha_round(matrix):
     return M
 
 
-def generate_chiper(pa, pf, ca, xa):
+def generate_cipher(pa, pf, ca, xa, s=[]):
     # primeiro realizar o xor entre o plaintext atual e o proximo
+    # S=[]: criptografa inclusive o evento 0
+    # S=[e1,e2,e3,..,en]=Gamma_pa: exclui o evento
+
     p_atual = '0b' + ''.join(map(str, pa))
     p_final = '0b' + ''.join(map(str, pf))
 
     c_atual = '0b' + ''.join(map(str, ca))
+    xf = xa
+
     e = xor(p_atual, p_final)
 
     if not (int(e, 2)):
-        cf = c_atual
+        if (s):
+            cf = c_atual
+        else:
+            if len(xa[2:]) > len(pa):
+                xf = xa[:2 + len(pa)]
+
+            ec = xor(e, xa)
+            cf = xor(c_atual, ec)
+
     else:
-        if xa[2:]>4:
-            xa = xa[:6]
-        ec = xor(e, xa)
+        if len(xa[2:]) > len(pa):
+            xf = xa[:2 + len(pa)]
+
+        while xf in s:
+            xa = '0b' + xa[2 + len(pa):]
+            xf = xa[:2 + len(pa)]
+
+        ec = xor(e, xf)
         cf = xor(c_atual, ec)
 
     # pega somente os ultimos 4 termos
-    return '0b' + cf[-4:]
+    return '0b' + cf[-len(pa):], list(map(int, cf[-4:]))
