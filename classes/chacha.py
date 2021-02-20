@@ -14,12 +14,12 @@ class ChachaEncrypt:
         if key is None:
             key = KEY
 
-        self.m_constant = const
+        self.m_constant = const # magic numbers
         self.key = key  # The algorithm key
         self.nonce = nonce  # o nonce
 
         # create a counter and a key order
-        self.counter = '0b' + '0' * 32  # the counter
+        self.counter = COUNTER  # the counter
         self.key_order = [0, 0]  # the ith,jth element of encrypted matrix
         self.current_key = ''  # return the present key in each encrypt
 
@@ -41,8 +41,6 @@ class ChachaEncrypt:
         :return: ciphertext in binary base
         """
 
-        # The case when plaintext <= 32bits
-        # verifying if plain text is a python bin form
         if plain_text[:2] == '0b':
             diff = abs(34 - len(plain_text))  # diff variable to add zeros if necessary
             p_text = '0b' + '0' * diff + plain_text[2:]  # to mount plaintext in binary
@@ -51,7 +49,7 @@ class ChachaEncrypt:
             p_text = '0b' + '0' * diff + str(plain_text)  # mount a plaintext in binary
 
         # In this line the encryption occurs.
-        # Do a xor operation between plaintext and a ginven key inside the encrypted chacha matrix
+        # Do a xor operation between plaintext and a given key inside the encrypted chacha matrix
         self.present_cipher = xor(p_text, self.encrypted_chacha_M[self.key_order[0]][self.key_order[1]])
         self.historical_cipher.append(self.present_cipher)
 

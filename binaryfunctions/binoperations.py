@@ -58,7 +58,6 @@ def xor(n1, n2):
 
 
 def bit_sum(n1, n2,l=32):
-
     # verifiying if is a bit class
     if type(n1) is str:
         n1 = n1

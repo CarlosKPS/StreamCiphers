@@ -58,3 +58,23 @@ def chacha_round(matrix):
     M[0][3], M[1][0], M[2][1], M[3][2] = quarter_round(M[0][3], M[1][0], M[2][1], M[3][2])
 
     return M
+
+
+def generate_chiper(pa, pf, ca, xa):
+    # primeiro realizar o xor entre o plaintext atual e o proximo
+    p_atual = '0b' + ''.join(map(str, pa))
+    p_final = '0b' + ''.join(map(str, pf))
+
+    c_atual = '0b' + ''.join(map(str, ca))
+    e = xor(p_atual, p_final)
+
+    if not (int(e, 2)):
+        cf = c_atual
+    else:
+        if xa[2:]>4:
+            xa = xa[:6]
+        ec = xor(e, xa)
+        cf = xor(c_atual, ec)
+
+    # pega somente os ultimos 4 termos
+    return '0b' + cf[-4:]
