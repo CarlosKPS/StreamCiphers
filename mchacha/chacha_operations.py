@@ -1,5 +1,6 @@
 # criar a matrix do chacha
 from binaryfunctions.binoperations import *
+
 def generate_chacha_matrix(key, counter, n0, n1, n2, c0, c1, c2, c3, elements=0):
     try:
         x0 = c0
@@ -22,7 +23,7 @@ def generate_chacha_matrix(key, counter, n0, n1, n2, c0, c1, c2, c3, elements=0)
         raise Exception(" the key has not 256 or some of the inputs are not allowed")
 
     if elements:
-        return [x0, x1, x2, x3, x4, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15]
+        return [x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15]
     else:
         return [[x0, x1, x2, x3], [x4, x5, x6, x7], [x8, x9, x10, x11], [x12, x13, x14, x15]]
 
@@ -74,25 +75,39 @@ def generate_cipher(pa, pf, ca, xa, s=[]):
     e = xor(p_atual, p_final)
 
     if not (int(e, 2)):
+        #print("Não houve alteração do plaintext")
         if (s):
             cf = c_atual
+            #print("não criptografou o evento nulo")
+            #print("cf = c_atual = ", cf)
         else:
+            #print("criptografando o evento nulo")
             if len(xa[2:]) > len(pa):
                 xf = xa[:2 + len(pa)]
+                #print("xa é maior do que o tamanho de pa xf =", xf)
 
             ec = xor(e, xa)
             cf = xor(c_atual, ec)
+            # print("ec {} and cf {}".format(ec, cf))
 
     else:
+        #print("Houve alteração no plaintext")
+        # if somente para pegar o pedaço da chave de interesse
         if len(xa[2:]) > len(pa):
             xf = xa[:2 + len(pa)]
+            #print('xa é maior do que o tamanho de pa xf = ', xf)
 
+        # enquanto xf for algum evento dentro de s=GAMMMA executa o comando abaixo
         while xf in s:
-            xa = '0b' + xa[2 + len(pa):]
-            xf = xa[:2 + len(pa)]
+            #print("entrou no loop")
+            xa = '0b' + xa[2 + len(pa):]  # mudamos xa ( excluimos os 4 primeiros valores após 0b
+            xf = xa[:2 + len(pa)]  # atribuimos a xf o novo xa
+            #print(xf)
 
         ec = xor(e, xf)
         cf = xor(c_atual, ec)
+        # print("ec {} and cf {}".format(ec, cf))
 
     # pega somente os ultimos 4 termos
-    return '0b' + cf[-len(pa):], list(map(int, cf[-4:]))
+    return list(map(int, cf[-len(pa):]))
+    #return '0b' + cf[-len(pa):], list(map(int, cf[-len(pa):])), xa, xf

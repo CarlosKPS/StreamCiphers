@@ -85,7 +85,7 @@ class ChachaEncrypt:
         # take the next element of the line
         self.key_order[1] += 1
 
-        # If the jth term is more than 3 its mean that all elements of a row was totally traveled
+        # If the jth term is m than 3 its mean that all elements of a row was totally traveled
         if self.key_order[1] > 3:
             self.key_order[0] += 1  # this mean next line
             self.key_order[1] = 0  # first column
