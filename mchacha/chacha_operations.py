@@ -58,7 +58,7 @@ def chacha_round(matrix):
     M[0][2], M[1][3], M[2][0], M[3][1] = quarter_round(M[0][2], M[1][3], M[2][0], M[3][1])
     M[0][3], M[1][0], M[2][1], M[3][2] = quarter_round(M[0][3], M[1][0], M[2][1], M[3][2])
 
-    return M
+    return M + matrix
 
 
 def generate_cipher(pa, pf, ca, xa, s=[]):

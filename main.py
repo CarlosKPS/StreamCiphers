@@ -36,7 +36,7 @@ def encrypt_decrypt(key=None, nonce=None, vector_plain=VEC_PLAIN_4BIT):
     standart_chaca = generate_chacha_matrix(key1, counter, n0, n1, n2, C0, C1, C2, C3, elements=0)
     key_stream = generate_key_stream(standart_chaca)[1]  # key stream ready
     #print(key_stream[0])
-    cipher_vec = [[0,0,1,1]]
+    cipher_vec = [vector_plain[0]]
     key_index = 0
 
     for i in range(1, len(vector_plain)):
