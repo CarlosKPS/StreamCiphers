@@ -1,6 +1,7 @@
 # criar a matrix do chacha
 from binaryfunctions.binoperations import *
 
+
 def generate_chacha_matrix(key, counter, n0, n1, n2, c0, c1, c2, c3, elements=0):
     try:
         x0 = c0
@@ -75,34 +76,34 @@ def generate_cipher(pa, pf, ca, xa, s=[]):
     e = xor(p_atual, p_final)
 
     if not (int(e, 2)):
-        #print("Não houve alteração do plaintext")
+        # print("Não houve alteração do plaintext")
         if (s):
             cf = c_atual
-            #print("não criptografou o evento nulo")
-            #print("cf = c_atual = ", cf)
+            # print("não criptografou o evento nulo")
+            # print("cf = c_atual = ", cf)
         else:
-            #print("criptografando o evento nulo")
+            # print("criptografando o evento nulo")
             if len(xa[2:]) > len(pa):
                 xf = xa[:2 + len(pa)]
-                #print("xa é maior do que o tamanho de pa xf =", xf)
+                # print("xa é maior do que o tamanho de pa xf =", xf)
 
             ec = xor(e, xa)
             cf = xor(c_atual, ec)
             # print("ec {} and cf {}".format(ec, cf))
 
     else:
-        #print("Houve alteração no plaintext")
+        # print("Houve alteração no plaintext")
         # if somente para pegar o pedaço da chave de interesse
         if len(xa[2:]) > len(pa):
             xf = xa[:2 + len(pa)]
-            #print('xa é maior do que o tamanho de pa xf = ', xf)
+            # print('xa é maior do que o tamanho de pa xf = ', xf)
 
         # enquanto xf for algum evento dentro de s=GAMMMA executa o comando abaixo
         while xf in s:
-            #print("entrou no loop")
+            # print("entrou no loop")
             xa = '0b' + xa[2 + len(pa):]  # mudamos xa ( excluimos os 4 primeiros valores após 0b
             xf = xa[:2 + len(pa)]  # atribuimos a xf o novo xa
-            #print(xf)
+            # print(xf)
 
         ec = xor(e, xf)
         cf = xor(c_atual, ec)
@@ -110,4 +111,4 @@ def generate_cipher(pa, pf, ca, xa, s=[]):
 
     # pega somente os ultimos 4 termos
     return list(map(int, cf[-len(pa):]))
-    #return '0b' + cf[-len(pa):], list(map(int, cf[-len(pa):])), xa, xf
+    # return '0b' + cf[-len(pa):], list(map(int, cf[-len(pa):])), xa, xf
