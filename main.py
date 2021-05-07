@@ -2,6 +2,7 @@ from mchacha.chacha_operations import *
 from mchacha.constants import *
 
 
+# COLOCAR UMA CONDICAO PARA EVITAR EVENTO PROIBIDO
 def generate_random_plain(bits, n_vec):
     vec_text = open('vec.txt', 'w')
     for i in range(0, n_vec):
@@ -103,21 +104,33 @@ def generate_initial_keystream(key=None, nonce=None):
 
 
 # FALTA FAZER UMA ATUALIZAÇÃO DE CHAVE
-def update_key(current_key, counter, nonce=None, c0=None, c1=None, c2=None, c3=None):
-    if current_key is None:
-        key = KEY
+def update_key(current_key, counter, key=None, nonce=None, c0=None, c1=None, c2=None, c3=None):
+    """
+    :param current_key: a chave atual que esta com menos de 1024 bits
+    :param key: a chave para gerar a matriz chacha
+    :param counter: contador atualizado
+    :param nonce: nonce escolhido padrao
+    :param c0: constante 0
+    :param c1:  constante 1
+    :param c2:  constante 2
+    :param c3:  constante 3
+    :return: retorna a chave atualizada e o contador atualizado
+    """
+    if key is None:
+        key1 = KEY
     else:
-        key = key
+        key1 =key
     if nonce is None:
         N0, N1, N2 = NONCE0, NONCE1, NONCE2
     else:
         N0, N1, N2 = nonce[0], nonce[1], nonce[1]
 
-    mm = generate_chacha_matrix(current_key, counter, N0, N1, N2, C0, C1, C2, C3)
-    kk = generate_key_stream(mm)
-    kk = kk + ''.join(list(map(my_join, kk))).replace("0b", "")
+    count = counter_update(counter)
+    mm = generate_chacha_matrix(key1, count, N0, N1, N2, C0, C1, C2, C3)
+    kk = generate_key_stream(mm)[0]
+    kk = ''.join(list(map(my_join, kk))).replace("0b", "")
 
-    return current_key + kk
+    return current_key + kk, count
 
 
 # Funcionando aparentemente
@@ -200,16 +213,18 @@ if __name__ == "__main__":
     # U1 = [1, 1, 0, 0, 1]
 
     # U_list = [[1, 1, 1, 1, 0], [1, 0, 0, 1, 1], [0, 0, 1, 1, 0], [1, 1, 0, 0, 0], [1, 1, 0, 0, 0], [1, 0, 0, 0, 0]]
-    generate_random_plain(5, 200)
+    generate_random_plain(8, 200)
     U_list = read_vect('vec')
     u0 = U_list[0]
     c0 = u0
     C_list = []
     C_list.append(c0)
-
+    # arquivo para guardar as chaves
+    k_plain = open('keyplain.txt', 'w')
     # for nos elementos remanscentes da lista
     for u1 in U_list[1:]:
         current_key = ks[:2 + len(u1)]
+        k_plain.write(current_key+'\n')
         # print(current_key)
         # print(u0, u1, c0, current_key)
         cipher = get_cipher(u0, u1, c0, current_key)
@@ -225,6 +240,11 @@ if __name__ == "__main__":
 
         if len(ks) < 1024:
             print('passou')
+            print(len(ks), g_counter)
+            ks, g_counter = update_key(ks, g_counter)
+            print(len(ks), g_counter)
+
+    k_plain.close()
 
     print('Plain', U_list)
     print('Cipher', C_list)
@@ -241,9 +261,11 @@ if __name__ == "__main__":
     u0 = c0
     R_list = []
     R_list.append(c0)
-
+    # Gravando as chaves utilizadas no ciphertext
+    k_cipher = open('k_cipher.txt', 'w')
     for c1 in C_list[1:]:
         current_key = ks[:2 + len(u1)]
+        k_cipher.write(current_key+'\n')
         # print(current_key)
         # print(u0, u1, c0, current_key)
         plain_text = get_plain(c0, c1, u0, current_key)
@@ -258,8 +280,12 @@ if __name__ == "__main__":
         u0 = plain_text[0]
 
         if len(ks) < 1024:
+            print(len(ks), g_counter)
             print('passou')
+            ks, g_counter = update_key(ks, g_counter)
+            print(len(ks), g_counter)
 
+    k_cipher.close()
     print('Plain ', R_list)
 
     # GUARDANDO O RETORNO DO PLAINTEXT
