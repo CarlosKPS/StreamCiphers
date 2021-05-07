@@ -2,7 +2,39 @@ from mchacha.chacha_operations import *
 from mchacha.constants import *
 
 
-# Funcionando
+def generate_random_plain(bits, n_vec):
+    vec_text = open('vec.txt', 'w')
+    for i in range(0, n_vec):
+        vec_text.write(str(random_vector(bits)) + '\n')
+    vec_text.close()
+    return 0
+
+
+def random_vector(n_bits):
+    vector = ''
+    for i in range(0, n_bits):
+        vector = vector + str(random.randrange(0, 2)) + ' '
+    return vector.strip(" ")
+
+
+def read_vect(filename):
+    f = open(filename + '.txt', 'r')
+    vector = []
+    for line in f:
+        vector.append([int(i) for i in line.split()])
+    return vector
+
+
+def record_vec_in_file(vector, filename=None):
+    if filename is None:
+        name = 'new_vec_text'
+    else:
+        name = filename
+    f = open(name + '.txt', 'w')
+    for i in vector:
+        f.write(' '.join(map(str, i)) + '\n')
+
+
 def generate_key_stream(matrix):
     """ :param: The first matrix
         :return: The key stream based on chacha algorithm
@@ -14,7 +46,6 @@ def generate_key_stream(matrix):
     return M, [key for l in M for key in l]
 
 
-# Funcionando
 def my_join(x):
     """
     :param x: -> the list desired to join
@@ -23,7 +54,6 @@ def my_join(x):
     return ''.join(x)
 
 
-# Funcionando
 def counter_update(counter):
     c = counter
     add = bin(int(c, 2) + 1)
@@ -123,12 +153,12 @@ def event_cd(u0, u1, k, ep=None, en=None, cd=True):
 
     # definindo evento de entrada
     e_0 = xor(u_0, u_1)  # vemos a mudança na leitura dos sensores
-    #print('evento 0', e_0)
+    # print('evento 0', e_0)
     e_1 = xor(e_0, k)  # evento de saída
-    #print('evento saida', e_1)
-    #print('evento nulo', e_n)
+    # print('evento saida', e_1)
+    # print('evento nulo', e_n)
 
-    if e_n == '0b'+e_1[-len(u0):]:
+    if e_n == '0b' + e_1[-len(u0):]:
         return list(map(int, xor(e_p, k)[-len(u0):])), '0b' + xor(e_p, k)[-len(u0):]
     else:
         return list(map(int, e_1[-len(u0):])), '0b' + e_1[-len(u0):]
@@ -144,7 +174,7 @@ def get_cipher(u0, u1, c0, k, ep=None, en=None):
         ep = [1] * len(u0)
 
     e_cif = event_cd(u0, u1, k, ep, en)[1]  # alterar nome para evento de saída
-    #print('e_cif', e_cif)
+    # print('e_cif', e_cif)
     return [list(map(int, xor(e_cif, c_0)[-len(u0):])), '0b' + xor(e_cif, c_0)[-len(u0):]]
 
 
@@ -158,7 +188,7 @@ def get_plain(c0, c1, u0, k, ep=None, en=None):
         ep = [1] * len(c0)
 
     e_cif = event_cd(c0, c1, k, ep, en, False)[1]
-    #print('e_cif', e_cif)
+    # print('e_cif', e_cif)
     return [list(map(int, xor(e_cif, u_0)[-len(c0):])), '0b' + xor(e_cif, u_0)[-len(c0):]]
 
 
@@ -166,10 +196,12 @@ if __name__ == "__main__":
     g_counter = '0b' + '0' * 30 + '11'
     ks = generate_initial_keystream()
 
-    #U0 = [1, 0, 1, 1, 1]
-    #U1 = [1, 1, 0, 0, 1]
+    # U0 = [1, 0, 1, 1, 1]
+    # U1 = [1, 1, 0, 0, 1]
 
-    U_list = [[1, 1, 1, 1, 0], [1, 0, 0, 1, 1], [0, 0, 1, 1, 0], [1, 1, 0, 0, 0], [1, 1, 0, 0, 0], [1, 0, 0, 0, 0]]
+    # U_list = [[1, 1, 1, 1, 0], [1, 0, 0, 1, 1], [0, 0, 1, 1, 0], [1, 1, 0, 0, 0], [1, 1, 0, 0, 0], [1, 0, 0, 0, 0]]
+    generate_random_plain(5, 200)
+    U_list = read_vect('vec')
     u0 = U_list[0]
     c0 = u0
     C_list = []
@@ -177,15 +209,15 @@ if __name__ == "__main__":
 
     # for nos elementos remanscentes da lista
     for u1 in U_list[1:]:
-        current_key = ks[:2+len(u1)]
-        print(current_key)
-        #print(u0, u1, c0, current_key)
+        current_key = ks[:2 + len(u1)]
+        # print(current_key)
+        # print(u0, u1, c0, current_key)
         cipher = get_cipher(u0, u1, c0, current_key)
         C_list.append(cipher[0])
 
         # verificando se o evento não será nulo
-        if u1!=u0:
-            ks = '0b'+ks[2+len(u1):]
+        if u1 != u0:
+            ks = '0b' + ks[2 + len(u1):]
 
         # atualização dos parametros
         u0 = u1
@@ -197,10 +229,13 @@ if __name__ == "__main__":
     print('Plain', U_list)
     print('Cipher', C_list)
 
-    #gera novo counter e nova keystream completa
+    # gera novo counter e nova keystream completa
     g_counter = '0b' + '0' * 30 + '11'
     ks = generate_initial_keystream()
 
+    # CRIANDO UM ARQUIVO COM O CIPHERTEXT
+    record_vec_in_file(C_list,'cipher')
+    C_list = read_vect('cipher')
 
     c0 = C_list[0]
     u0 = c0
@@ -208,15 +243,15 @@ if __name__ == "__main__":
     R_list.append(c0)
 
     for c1 in C_list[1:]:
-        current_key = ks[:2+len(u1)]
-        print(current_key)
-        #print(u0, u1, c0, current_key)
+        current_key = ks[:2 + len(u1)]
+        # print(current_key)
+        # print(u0, u1, c0, current_key)
         plain_text = get_plain(c0, c1, u0, current_key)
         R_list.append(plain_text[0])
 
         # verificando se o evento não será nulo
-        if c1!=c0:
-            ks = '0b'+ks[2+len(u1):]
+        if c1 != c0:
+            ks = '0b' + ks[2 + len(u1):]
 
         # atualização dos parametros
         c0 = c1
@@ -226,6 +261,12 @@ if __name__ == "__main__":
             print('passou')
 
     print('Plain ', R_list)
+
+    # GUARDANDO O RETORNO DO PLAINTEXT
+    record_vec_in_file(R_list, 'back_to_plain')
+    print(ks)
 # TOMAR CUIDADO PARA ZERAR O CONTADOR E TRABALHAR COM UMA LISTA TXT PARA A ENTRADA DE DADOS
 # FALTA FAZER O UPDATE DA KEYSTREAM E TESTAR COM len(ks)<32, 40, 50 bits por exemplo
+
 # INPLEMENTAR RECEBENDO UM TXT
+# GERAR UMA LISTA NO PYTHON - TRANSFORMAR PARA TXT
